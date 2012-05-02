@@ -209,7 +209,7 @@ module Resque
         queue, job = multi_queue.poll(interval.to_i)
       end
 
-      log! "Found job on #{queue}"
+      log! "Found job on #{queue.name}"
       Job.new(queue.name, job) if queue && job
     end
 

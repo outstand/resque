@@ -12,6 +12,9 @@ require 'resque/stat'
 require 'resque/job'
 require 'resque/worker'
 require 'resque/plugin'
+require 'resque/redis_retry_wrapper'
+
+require 'retryable'
 
 module Resque
   include Helpers
@@ -37,11 +40,13 @@ module Resque
       end
       namespace ||= :resque
 
-      @redis = Redis::Namespace.new(namespace, :redis => redis)
+      @redis = Redis::Namespace.new(namespace, :redis => Resque::RedisRetryWrapper.new(redis))
+    when Resque::RedisRetryWrapper
+      @redis = server
     when Redis::Namespace
       @redis = server
     else
-      @redis = Redis::Namespace.new(:resque, :redis => server)
+      @redis = Redis::Namespace.new(:resque, :redis => Resque::RedisRetryWrapper.new(server))
     end
   end
 
@@ -50,7 +55,6 @@ module Resque
   def redis
     return @redis if @redis
     self.redis = Redis.respond_to?(:connect) ? Redis.connect : "localhost:6379"
-    self.redis
   end
 
   def redis_id

@@ -8,7 +8,7 @@ module Resque
 
     def method_missing(m, *args, &block)
       # send all method calls directly to redis instance, but retry on connection errors
-      retryable(:tries => tries, :sleep => sleep_seconds, :on => [TimeoutError, Errno::EAGAIN]) do
+      retryable(:tries => tries, :sleep => sleep_seconds, :on => [Redis::TimeoutError]) do
         @redis.send(m, *args, &block)
       end
     end

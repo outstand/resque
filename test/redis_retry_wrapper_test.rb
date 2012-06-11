@@ -15,7 +15,7 @@ context "Resque::RedisRetryWrapper" do
 
   test 'retries commands upon receiving connection errors' do
     Redis::Client.any_instance.expects(:connected?).at_least(3).returns(false)
-    Redis::Client.any_instance.expects(:establish_connection).at_least(3).raises(Errno::EAGAIN)
+    Redis::Client.any_instance.expects(:establish_connection).at_least(3).raises(Redis::TimeoutError)
     
     @redis_wrapper.lpop('retry_wrapper_test') rescue true
   end
